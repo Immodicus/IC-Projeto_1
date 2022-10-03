@@ -15,6 +15,6 @@ make
 
 ## To test:
 
-../build/wav_cp sample.wav copy.wav // copies "sample.wav" into "copy.wav"
-../build/wav_hist sample.wav 0 // outputs the histogram of channel 0 (left)
-../build/wav_dct sample.wav out.wav // generates a DCT "compressed" version
+- ../build/wav_cp sample.wav copy.wav // copies "sample.wav" into "copy.wav"
+- ../build/wav_hist sample.wav 0 // outputs the histogram of channel 0 (left)
+- ../build/wav_dct sample.wav out.wav // generates a DCT "compressed" version

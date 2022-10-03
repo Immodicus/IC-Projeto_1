@@ -24,3 +24,4 @@ add_executable (wav_quant wav_quant.cpp)
 target_link_libraries (wav_quant sndfile)
 
 add_executable(TextEncoder TextEncoder.cpp)
+add_executable(wav_cmp wav_cmp.cpp)

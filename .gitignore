@@ -54,6 +54,7 @@ dkms.conf
 # Extra
 build/
 .vs/
+.vscode/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json

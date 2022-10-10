@@ -15,9 +15,25 @@ class WAVQuant
 
         const uint64_t BufferSize = 256000;
 
-        int16_t Quantize(int16_t s, uint8_t numBits)
+        int16_t Quantize(short s, uint8_t bBits)
         {
-            return s >> (16 - numBits);
+            if(bBits == 0 || bBits > 15) throw new std::runtime_error("Invalid number of bits");
+
+            constexpr uint32_t srcNumBits = sizeof(short) * 8;
+            const uint32_t destNumBits = bBits;
+
+            const uint32_t uBitDiff = srcNumBits - destNumBits;
+
+            const uint16_t uDiff = pow(2, uBitDiff);
+
+            int16_t result = s / uDiff;
+
+            if(s < 0 && s % uDiff != 0)
+            {
+                result--;
+            }
+
+            return result;
         }
     
     public:

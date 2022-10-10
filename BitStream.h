@@ -170,10 +170,8 @@ public:
 			{
 				nBits = (iFileLength) * 8 - iCurBit;
 			}
-			else
-			{
-				Fill(iCurBit);
-			}
+			
+			Fill(iCurBit);
 		}
 
 		BitSet b(nBits);

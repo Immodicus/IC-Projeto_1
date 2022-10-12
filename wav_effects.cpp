@@ -1,77 +1,46 @@
 #include <iostream>
-#include <cmath>
-#include <fstream>
+#include <vector>
+#include <math.h>
+#include "AudioFile.h"
+
 using namespace std;
 
-const int sampleRate = 44100;
-const int bitDepth = 16;
-
-class SineOscillator
+int main(int argc, char *argv[])
 {
-    float frequency, amplitude, angle = 0.0f, offset = 0.0f;
-
-public:
-    SineOscillator(float freq, float amp) : frequency(freq), amplitude(amp)
+    // Command line arguments processing
+    if (argc != 2)
     {
-        offset = 2 * M_PI * frequency / sampleRate;
+        cout << "\033[1;31mError: Usage sintax is ./wav_effects <input filename>\033[0m" << endl;
+        return 0;
     }
-    float process()
+    char *inputfile = argv[1];
+
+    // AudioFile
+    AudioFile<double> af;
+    af.shouldLogErrorsToConsole(false);
+
+    // Load audiofile
+    if (af.load(inputfile) == 0)
     {
-        auto sample = amplitude * sin(angle);
-        angle += offset;
-        return sample;
-        // Asin(2pif/sr)
+        cout << "\033[1;31mERROR: File doesn't exist or otherwise can't load file\033[0m" << endl;
+        return 0;
     }
-};
 
-void writeToFile(ofstream &file, int value, int size)
-{
-    file.write(reinterpret_cast<const char *>(&value), size);
-}
-
-int main()
-{
-    int duration = 2;
-    ofstream audioFile;
-    audioFile.open("waveform_audio_effects.wav", ios::binary);
-    SineOscillator sineOscillator(440, 0.5);
-
-    // Header chunk
-    audioFile << "RIFF";
-    audioFile << "----";
-    audioFile << "WAVE";
-
-    // Format chunk
-    audioFile << "fmt ";
-    writeToFile(audioFile, 16, 4);                        // Size
-    writeToFile(audioFile, 1, 2);                         // Compression code
-    writeToFile(audioFile, 1, 2);                         // Number of channels
-    writeToFile(audioFile, sampleRate, 4);                // Sample rate
-    writeToFile(audioFile, sampleRate * bitDepth / 8, 4); // Byte rate
-    writeToFile(audioFile, bitDepth / 8, 2);              // Block align
-    writeToFile(audioFile, bitDepth, 2);                  // Bit depth
-
-    // Data chunk
-    audioFile << "data";
-    audioFile << "----";
-
-    int preAudioPosition = audioFile.tellp();
-
-    auto maxAmplitude = pow(2, bitDepth - 1) - 1;
-    for (int i = 0; i < sampleRate * duration; i++)
+    // Get audiofile meta information
+    int numChannels = af.getNumChannels();
+    int numSamples = af.getNumSamplesPerChannel();
+    vector<double> samples;
+    double output;
+    int gain = 1; // we can reduce it
+    int k = 0;
+    for (int i = 0; i < numChannels; i++)
     {
-        auto sample = sineOscillator.process();
-        int intSample = static_cast<int>(sample * maxAmplitude);
-        writeToFile(audioFile, intSample, 2);
+        for (int j = 0; j < numSamples; j++)
+        {
+            af.samples[i][j] = af.samples[i][j] + gain * af.samples[i - k][j - k]; // we have check it if it implemented correctly
+            samples.push_back(af.samples[i][j]);
+        }
+        k++;
     }
-    int postAudioPosition = audioFile.tellp();
-
-    audioFile.seekp(preAudioPosition - 4);
-    writeToFile(audioFile, postAudioPosition - preAudioPosition, 4);
-
-    audioFile.seekp(4, ios::beg);
-    writeToFile(audioFile, postAudioPosition - 8, 4);
-
-    audioFile.close();
-    return 0;
+    af.save("wav_effects.wav");
 }

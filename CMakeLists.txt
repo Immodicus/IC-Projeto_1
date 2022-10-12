@@ -20,9 +20,17 @@ target_link_libraries (wav_hist sndfile)
 add_executable (wav_dct wav_dct.cpp)
 target_link_libraries (wav_dct sndfile fftw3)
 
+add_executable (wav_dct_codec wav_dct_codec.cpp)
+target_link_libraries (wav_dct_codec sndfile fftw3)
+
 add_executable (wav_quant wav_quant.cpp)
 target_link_libraries (wav_quant sndfile)
 
 add_executable(TextEncoder TextEncoder.cpp)
+
 add_executable(wav_cmp wav_cmp.cpp)
+
+add_executable(wav_cmp2 wav_cmp1.cpp)
+target_link_libraries (wav_cmp2 sndfile fftw3)
+
 add_executable(wav_effects wav_effects.cpp)

@@ -7,10 +7,6 @@
 #include <string.h>
 #include "BitSet.h"
 
-#pragma warning(disable:4996)
-
-#define CHECK(expr) if (!(expr)) {std::errc << "Fatal Error at " << __FILE__ << " : " << __LINE__ << "\n"; std::terminate();}
-
 class BitStream
 {
 private:
@@ -95,8 +91,6 @@ private:
 	{
 		if (iCurBufferSize > 0 && iLastWrittenPos >= 0)
 		{
-			std::cout << "Flushing: " << iLastWrittenPos + 1 << "bytes\n";
-			//check
 			fseek(fPtr, iBufferStart, SEEK_SET);
 			fwrite(vBuffer.data(), sizeof(int8_t), iLastWrittenPos + 1, fPtr);
 			if (bExtended)
@@ -120,8 +114,7 @@ public:
 
 		if (!fPtr) 
 		{
-			std::cout << "abort" << std::endl;
-			std::abort();
+			throw std::runtime_error("Failed to open file");
 		}
 
 		if (!(iFileLength = GetFileSize()))
@@ -246,6 +239,57 @@ public:
 		}
 
 		if ((int64_t)((((iCurBit-1) / 8)) - iBufferStart) > iLastWrittenPos) iLastWrittenPos = (int64_t)((((iCurBit - 1) / 8)) - iBufferStart);
+
+		return true;
+	}
+
+	template<typename T>
+	bool Write(const T& v)
+	{
+		static_assert(std::is_fundamental<T>::value);
+
+		if(iCurBit % 8 != 0) return false;
+
+		constexpr size_t sSize = sizeof(T);
+		constexpr size_t sBits = sSize * 8;
+
+		if (!IsBitCached(iCurBit) || !IsBitCached(iCurBit + sBits - 1))
+		{
+			Extend(iCurBit);
+		}
+
+		memcpy(vBuffer.data() + ((iCurBit / 8) - iBufferStart), &v, sSize);
+
+		iCurBit += sBits;
+
+		if ((int64_t)((((iCurBit-1) / 8)) - iBufferStart) > iLastWrittenPos) iLastWrittenPos = (int64_t)((((iCurBit - 1) / 8)) - iBufferStart);
+
+		return true;
+	}
+
+	template<typename T>
+	bool Read(T& v)
+	{
+		static_assert(std::is_fundamental<T>::value);
+
+		if(iCurBit % 8 != 0) return false;
+
+		constexpr size_t sSize = sizeof(T);
+		constexpr size_t sBits = sSize * 8;
+
+		if (!IsBitCached(iCurBit) || !IsBitCached(iCurBit + sBits - 1))
+		{
+			if (IsBitOutside(iCurBit) || IsBitOutside(iCurBit + sBits - 1))
+			{
+				return false;
+			}
+			
+			Fill(iCurBit);
+		}
+
+		memcpy(&v, vBuffer.data() + ((iCurBit / 8) - iBufferStart), sSize);
+
+		iCurBit += sBits;
 
 		return true;
 	}

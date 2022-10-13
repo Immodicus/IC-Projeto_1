@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <assert.h>
 #include <fftw3.h>
 #include <sndfile.hh>
 
@@ -109,11 +110,11 @@ int main(int argc, char *argv[])
 			std::cout << "nBlocks: " << nBlocks << "\n";
 		}
 
-		outBs.Write(sampleRate);
-		outBs.Write(nChannels);
-		outBs.Write(nFrames);
-		outBs.Write(blockSize);
-		outBs.Write(dDctFrac);
+		assert(outBs.Write(sampleRate));
+		assert(outBs.Write(nChannels));
+		assert(outBs.Write(nFrames));
+		assert(outBs.Write(blockSize));
+		assert(outBs.Write(dDctFrac));
 
 		vector<double> x(blockSize);
 
@@ -143,16 +144,19 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
+
+		fftw_destroy_plan(plan_d);
+		fftw_cleanup();
 	}
 	else
 	{
 		BitStream inBs{argv[argc - 2], "r"};
 		
-		inBs.Read(sampleRate);
-		inBs.Read(nChannels);
-		inBs.Read(nFrames);
-		inBs.Read(blockSize);
-		inBs.Read(dDctFrac);
+		assert(inBs.Read(sampleRate));
+		assert(inBs.Read(nChannels));
+		assert(inBs.Read(nFrames));
+		assert(inBs.Read(blockSize));
+		assert(inBs.Read(dDctFrac));
 
 		nBlocks = static_cast<size_t>(ceil(static_cast<double>(nFrames) / blockSize));
 
@@ -192,7 +196,7 @@ int main(int argc, char *argv[])
 					for (size_t b = 0; b < 32; b++)
 					{
 						bool tb;
-						if (!inBs.ReadBit(tb)) 	std::abort();
+						assert(inBs.ReadBit(tb));
 
 						if (tb)
 						{
@@ -217,6 +221,9 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
+
+		fftw_destroy_plan(plan_i);
+		fftw_cleanup();
 
 		sfhOut.writef(samples.data(), nFrames);
 	}

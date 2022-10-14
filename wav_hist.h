@@ -29,18 +29,31 @@ public:
 	void update(const std::vector<short> &samples)
 	{
 		size_t n{};
-		for (auto s : samples)
+
+		if(bStereo)
 		{
-			if (bStereo && n % 2 == 1)
+			for (auto s : samples)
 			{
-				short left = samples[n - 1];
-				short right = samples[n];
+				if (n % 2 == 1)
+				{
+					short left = samples[n - 1];
+					short right = samples[n];
 
-				counts[2][(left + right) / 2]++; // MID
-				counts[3][(left - right) / 2]++; // SIDE
+					counts[2][(left + right) / 2]++; // MID
+					counts[3][(left - right) / 2]++; // SIDE
+
+					//std::cout << "Left: " << left << " Right: " << right << " Mid: " <<  (left + right) / 2 << " Side: " << (left - right) / 2 << "\n";
+				}
+
+				counts[n++ % 2][s]++;
 			}
-
-			counts[n++ % counts.size()][s]++;
+		}
+		else
+		{
+			for (auto s : samples)
+			{
+				counts[n++ % counts.size()][s]++;
+			}
 		}
 	}
 
@@ -48,6 +61,24 @@ public:
 	{
 		for (auto [value, counter] : counts[channel])
 			std::cout << value << '\t' << counter << '\n';
+	}
+
+	void dump(size_t channel, const char* fileName)
+	{
+		FILE* histFile = fopen(fileName, "w");
+
+		for(int64_t v = INT16_MIN; v <= INT16_MAX; v++)
+		{
+			size_t c = 0;
+			if(counts[channel].count(v))
+			{
+				c = counts[channel][v];
+			}
+			
+			fwrite(&c, sizeof(size_t), 1, histFile);
+		}
+
+		fclose(histFile);
 	}
 };
 

@@ -7,11 +7,23 @@ using namespace std;
 
 constexpr size_t FRAMES_BUFFER_SIZE = 65536; // Buffer for reading frames
 
-int main(int argc, char *argv[]) {
-
-	if(argc < 3) {
-		cerr << "Usage: " << argv[0] << " <input file> <channel>\n";
+int main(int argc, char *argv[]) 
+{
+	if(argc < 3) 
+	{
+		cerr << "Usage: " << argv[0] << " [ -w histFile ] <input file> <channel>\n";
 		return 1;
+	}
+
+	char* histFileName = NULL;
+
+	for (int n = 1; n < argc; n++)
+	{
+		if (string(argv[n]) == "-w" && n+1 < argc)
+		{
+			histFileName = argv[n+1];
+			break;
+		}
 	}
 
 	SndfileHandle sndFile { argv[argc-2] };
@@ -31,7 +43,16 @@ int main(int argc, char *argv[]) {
 	}
 
 	int channel { stoi(argv[argc-1]) };
-	if(channel >= sndFile.channels()) {
+	if(sndFile.channels() == 2)
+	{
+		if(channel >= 4)
+		{
+			cerr << "Error: invalid channel requested\n";
+			return 1;
+		}
+	}
+	else if(channel >= sndFile.channels()) 
+	{
 		cerr << "Error: invalid channel requested\n";
 		return 1;
 	}
@@ -44,7 +65,15 @@ int main(int argc, char *argv[]) {
 		hist.update(samples);
 	}
 
-	hist.dump(channel);
+	if(histFileName)
+	{
+		hist.dump(channel, histFileName);
+	}
+	else
+	{
+		hist.dump(channel);
+	}
+
 	return 0;
 }
 

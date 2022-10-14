@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <numeric>
+#include <algorithm>
 #include <assert.h>
 #include <fftw3.h>
 #include <sndfile.hh>
@@ -9,9 +11,41 @@
 
 using namespace std;
 
+// https://stackoverflow.com/a/12399290
+template <typename T>
+inline std::vector<size_t> vec_sort_index(const std::vector<T> &v)
+{
+	static_assert(std::is_fundamental<T>::value);
+
+	std::vector<size_t> vInd(v.size());
+
+	// fill vInd with index values for v (0 to s.size() - 1);
+	std::iota(vInd.begin(), vInd.end(), 0);
+
+	std::sort(
+		vInd.begin(), vInd.end(), [&v](size_t i1, size_t i2)
+		{ return abs(v[i1]) > abs(v[i2]); });
+
+	return vInd;
+}
+
+template <typename T>
+inline double vec_norm(const std::vector<T> &v)
+{
+	static_assert(std::is_fundamental<T>::value);
+
+	double result = 0.0;
+
+	for (auto d : v)
+	{
+		result += d * d;
+	}
+
+	return sqrt(result);
+}
+
 int main(int argc, char *argv[])
 {
-
 	size_t sampleRate = 0;
 	size_t nChannels = 0;
 	size_t nFrames = 0;
@@ -100,7 +134,7 @@ int main(int argc, char *argv[])
 		sfhIn.readf(samples.data(), nFrames);
 		samples.resize(nBlocks * blockSize * nChannels);
 
-		if(verbose)
+		if (verbose)
 		{
 			std::cout << "sampleRate: " << sampleRate << "\n";
 			std::cout << "nChannels: " << nChannels << "\n";
@@ -126,20 +160,56 @@ int main(int argc, char *argv[])
 				for (size_t k = 0; k < blockSize; k++)
 				{
 					x[k] = samples[(n * blockSize + k) * nChannels + c];
+					// x[k] /= (INT16_MAX + 1);
+					// //std::cout << x[k] << "\n";
 				}
 
 				fftw_execute(plan_d);
 
-				// Keep only "dctFrac" of the "low frequency" coefficients
-				for (size_t k = 0; k < blockSize * dDctFrac; k++)
-				{
-					float d = x[k] / (blockSize << 1);
-					int32_t d2 = 0;
-					memcpy(&d2, &d, sizeof(float));
+				double xNorm = vec_norm(x);
+				auto sorted = vec_sort_index(x);
 
-					for (size_t b = 0; b < 32; b++)
+				size_t needed = 0;
+
+				if(dDctFrac >= 1.0)
+				{
+					needed = blockSize;
+				}
+				else
+				{
+					double prev = 0.0;
+					while (prev / xNorm < dDctFrac && needed <= blockSize)
 					{
-						outBs.WriteBit((d2 >> (31 - (b % 32))) & 1);
+						prev = sqrt(pow(prev, 2) + pow(x[sorted[needed]], 2));
+
+						needed++;
+					}
+				}
+
+				std::cout << "xNorm: " << xNorm << " Need: " << needed << " coefficients Percent: " << (double)needed / x.size() * 100 << "\n";
+
+				BitSet bitmap(blockSize);
+
+				for (size_t b = 0; b < needed; b++)
+				{
+					bitmap.SetBit(sorted[b], true);
+				}
+
+				assert(outBs.WriteNBits(bitmap));
+
+				// Keep only "dctFrac" of the "low frequency" coefficients
+				for (size_t k = 0; k < blockSize; k++)
+				{
+					if (bitmap.GetBit(k))
+					{
+						float d = x[k] / (blockSize << 1);
+						int32_t d2 = 0;
+						memcpy(&d2, &d, sizeof(float));
+
+						for (size_t b = 0; b < 32; b++)
+						{
+							outBs.WriteBit((d2 >> (31 - (b % 32))) & 1);
+						}
 					}
 				}
 			}
@@ -151,7 +221,7 @@ int main(int argc, char *argv[])
 	else
 	{
 		BitStream inBs{argv[argc - 2], "r"};
-		
+
 		assert(inBs.Read(sampleRate));
 		assert(inBs.Read(nChannels));
 		assert(inBs.Read(nFrames));
@@ -160,14 +230,14 @@ int main(int argc, char *argv[])
 
 		nBlocks = static_cast<size_t>(ceil(static_cast<double>(nFrames) / blockSize));
 
-		if(verbose)
+		if (verbose)
 		{
 			std::cout << "sampleRate: " << sampleRate << "\n";
 			std::cout << "nChannels: " << nChannels << "\n";
 			std::cout << "nFrames: " << nFrames << "\n";
 			std::cout << "blockSize: " << blockSize << "\n";
 			std::cout << "dDctFrac: " << dDctFrac << "\n";
-			std::cout << "nBlocks: " << nBlocks << "\n";			
+			std::cout << "nBlocks: " << nBlocks << "\n";
 		}
 
 		SndfileHandle sfhOut{argv[argc - 1], SFM_WRITE, SF_FORMAT_PCM_16 | SF_FORMAT_WAV, static_cast<int>(nChannels), static_cast<int>(sampleRate)};
@@ -189,28 +259,33 @@ int main(int argc, char *argv[])
 			{
 				memset(x.data(), 0, x.size() * sizeof(double));
 
-				for (size_t k = 0; k < blockSize * dDctFrac; k++)
+				BitSet bitmap = inBs.ReadNBits(blockSize);
+
+				for (size_t k = 0; k < blockSize; k++)
 				{
-					int32_t d2 = {};
-
-					for (size_t b = 0; b < 32; b++)
+					if (bitmap.GetBit(k))
 					{
-						bool tb;
-						assert(inBs.ReadBit(tb));
+						int32_t d2 = {};
 
-						if (tb)
+						for (size_t b = 0; b < 32; b++)
 						{
-							d2 |= (1 << (31 - b));
+							bool tb;
+							assert(inBs.ReadBit(tb));
+
+							if (tb)
+							{
+								d2 |= (1 << (31 - b));
+							}
+							else
+							{
+								d2 &= ~(1 << (31 - b));
+							}
 						}
-						else
-						{
-							d2 &= ~(1 << (31 - b));
-						}
+
+						float f;
+						memcpy(&f, &d2, sizeof(float));
+						x[k] = f;
 					}
-
-					float f;
-					memcpy(&f, &d2, sizeof(float));
-					x[k] = f;
 				}
 
 				fftw_execute(plan_i);

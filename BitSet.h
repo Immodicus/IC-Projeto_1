@@ -59,6 +59,11 @@ public:
         SetBit(vData[i / 8], i % 8, value);
     }
 
+    bool GetBit(uint64_t i)
+    {
+        return GetBit(vData[i / 8], i % 8);
+    }
+
     bool operator[](uint64_t i) const
     {
         if (i >= iBits) throw new std::runtime_error("Invalid index");

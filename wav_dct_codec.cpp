@@ -44,6 +44,16 @@ inline double vec_norm(const std::vector<T> &v)
 	return sqrt(result);
 }
 
+constexpr const uint32_t nBits = 16;
+
+inline constexpr void Split(double* x0, double* x1, double x)
+{
+    double d = x * (pow(2, nBits) + 1);
+    double t = d - x;
+    *x0 = d - t;
+    *x1 = x - *x0;
+}
+
 int main(int argc, char *argv[])
 {
 	size_t sampleRate = 0;
@@ -51,7 +61,7 @@ int main(int argc, char *argv[])
 	size_t nFrames = 0;
 	size_t blockSize = 1024;
 	size_t nBlocks = 0;
-	double dDctFrac = 0.2;
+	double dDctFrac = 0.9999;
 
 	bool verbose = false;
 	bool encode = true;
@@ -61,7 +71,7 @@ int main(int argc, char *argv[])
 		cerr << "Usage: wav_dct [ -v (verbose) ]\n";
 		cerr << "               [ -dec (decode) ]\n";
 		cerr << "               [ -bs blockSize (def 1024) ]\n";
-		cerr << "               [ -frac dctFraction (def 0.2) ]\n";
+		cerr << "               [ -frac dctFraction (def 0.9999) ]\n";
 		cerr << "               fileIn fileOut\n";
 		return 1;
 	}
@@ -202,13 +212,19 @@ int main(int argc, char *argv[])
 				{
 					if (bitmap.GetBit(k))
 					{
-						float d = x[k] / (blockSize << 1);
-						int32_t d2 = 0;
-						memcpy(&d2, &d, sizeof(float));
+						double d = x[k] / (blockSize << 1);
+						double d1;
+						double d2;
 
-						for (size_t b = 0; b < 32; b++)
+						Split(&d1, &d2, d);
+
+						int64_t i = 0;
+						memcpy(&i, &d1, sizeof(double));
+						i >>= (64 - nBits);
+
+						for (size_t b = (64 - nBits); b < 64; b++)
 						{
-							outBs.WriteBit((d2 >> (31 - (b % 32))) & 1);
+							outBs.WriteBit((i >> (63 - (b % 64))) & 1);
 						}
 					}
 				}
@@ -265,26 +281,27 @@ int main(int argc, char *argv[])
 				{
 					if (bitmap.GetBit(k))
 					{
-						int32_t d2 = {};
+						int64_t i = 0;
 
-						for (size_t b = 0; b < 32; b++)
+						for (size_t b = (64 - nBits); b < 64; b++)
 						{
 							bool tb;
-							assert(inBs.ReadBit(tb));
+							inBs.ReadBit(tb);
 
 							if (tb)
 							{
-								d2 |= (1 << (31 - b));
+								i |= (1 << (63 - b));
 							}
 							else
 							{
-								d2 &= ~(1 << (31 - b));
+								i &= ~(1 << (63 - b));
 							}
 						}
+						i <<= (64 - nBits);
 
-						float f;
-						memcpy(&f, &d2, sizeof(float));
-						x[k] = f;
+						double d;
+						memcpy(&d, &i, sizeof(double));
+						x[k] = d;
 					}
 				}
 

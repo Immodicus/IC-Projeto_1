@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     {
         for (int j = 0; j < numSamples; j++)
         {
-            af.samples[i][j] = af.samples[i][j] + gain * af.samples[i - k][j - k]; // we have check it if it implemented correctly
+            af.samples[i][j] = af.samples[i][j] + gain * af.samples[i - k][j - k]; // we have to check if it implemented correctly
             samples.push_back(af.samples[i][j]);
         }
         k++;

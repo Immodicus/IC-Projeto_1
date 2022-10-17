@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 					}
 				}
 
-				std::cout << "xNorm: " << xNorm << " Need: " << needed << " coefficients Percent: " << (double)needed / x.size() * 100 << "\n";
+				std::cout << "Block: " << n << " Channel: " << c << " xNorm: " << xNorm << " Need: " << needed << " coefficients Percent: " << (double)needed / x.size() * 100 << "\n";
 
 				BitSet bitmap(blockSize);
 
@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
 						for (size_t b = (64 - nBits); b < 64; b++)
 						{
 							bool tb;
-							inBs.ReadBit(tb);
+							assert(inBs.ReadBit(tb));
 
 							if (tb)
 							{

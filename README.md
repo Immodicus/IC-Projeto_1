@@ -8,6 +8,7 @@
 | ----: | ------------------- | ----------------------- |
 | 97147 | Jodionísio Muachifi | jodionsiomuachifi@ua.pt |
 | 97688 | Rúben Castelhano    | rubencastelhano@ua.pt   |
+| 93413 | Tiago Rodrigues     | rodriguestiago@ua.pt    |
 
 ## To build:
 

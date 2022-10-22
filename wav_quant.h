@@ -6,6 +6,8 @@
 #include <exception>
 #include <cmath>
 #include <sstream>
+#include <assert.h>
+#include <algorithm>
 
 class WAVQuant
 {
@@ -17,32 +19,16 @@ class WAVQuant
 
         int16_t Quantize(int16_t s, uint8_t bBits)
         {
-            if(bBits == 0 || bBits > 15) throw new std::runtime_error("Invalid number of bits");
+            assert(bBits < 16);
 
-            uint32_t srcNumBits = sizeof(int16_t) * 8;
-            const uint32_t destNumBits = bBits;
-            
-            const uint32_t uBitDiff = srcNumBits - destNumBits;
+            double n = static_cast<double>(s);
 
-            const uint16_t uDiff = pow(2, uBitDiff);
-            const uint16_t uHalf = uDiff / 2;
-            const int16_t uMax = (((int16_t)(pow(2, destNumBits))) / 2) - 1;
+            int16_t max = (INT16_MAX + 1) / pow(2, 16 - bBits) - 1;
+            int16_t min = (INT16_MIN) / pow(2, 16 - bBits);
 
-            int16_t result = s / uDiff;
+            n /= pow(2, 16 - bBits);
 
-            if(result < uMax)
-            {
-                if(s > 0)
-                {
-                    if(abs(s % uDiff) >= uHalf) result++;
-                }
-                else
-                {
-                    if(abs(s % uDiff) > uHalf) result--;
-                }
-            }
-
-            return result;
+            return std::clamp(static_cast<int16_t>(std::round(n)), min, max) << (16 - bBits);
         }
     
     public:

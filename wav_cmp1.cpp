@@ -7,9 +7,9 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	if(argc < 4) 
+	if(argc < 3) 
     {
-		cerr << "Usage: " << argv[0] << " <original file> <quantized file> <numBits>\n";
+		cerr << "Usage: " << argv[0] << " <original file> <quantized file>\n";
 		return 1;
 	}
 
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-    WAVCmp::PrintSNR(original, quantized, (uint64_t)atoi(argv[3]));
+    WAVCmp::PrintSNR(original, quantized);
 
     return EXIT_SUCCESS;
 }

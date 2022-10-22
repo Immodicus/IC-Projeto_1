@@ -11,14 +11,8 @@ constexpr const uint64_t FrameBufferSize = 256000;
 
 class WAVCmp
 {
-    private:
-        static constexpr int16_t Dequantize(int16_t s, uint8_t numBits)
-        {
-            return s << (16 - numBits);
-        }
-
     public:
-        static void PrintSNR(SndfileHandle& original, SndfileHandle& quantized, uint8_t numBits)
+        static void PrintSNR(SndfileHandle& original, SndfileHandle& quantized)
         {
             if(original.channels() != quantized.channels()
             || original.frames() != quantized.frames()
@@ -54,12 +48,10 @@ class WAVCmp
 
                     dOriginalEnergy += pow(abs((double)s), 2);
 
-                    int16_t nb = Dequantize(b, numBits);
-
-                    double dDiff = abs((double)s - (double)nb);
+                    double dDiff = abs((double)s - (double)b);
                     if(dDiff > dMaxAbsError) dMaxAbsError = dDiff;
 
-                    dNoiseEnergy += pow(abs((double)s - (double)nb), 2);
+                    dNoiseEnergy += pow(abs((double)s - (double)b), 2);
                 }
             }
 

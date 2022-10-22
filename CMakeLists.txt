@@ -26,6 +26,9 @@ target_link_libraries (wav_dct_codec sndfile fftw3)
 add_executable (wav_quant wav_quant.cpp)
 target_link_libraries (wav_quant sndfile)
 
+add_executable (wav_quant_v1 wav_quant_v1.cpp)
+target_link_libraries (wav_quant_v1 sndfile)
+
 add_executable(TextEncoder TextEncoder.cpp)
 
 add_executable(wav_cmp wav_cmp.cpp)

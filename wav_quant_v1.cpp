@@ -31,24 +31,7 @@ int main(int argc, char *argv[])
     int cnt = 0;
 
     int Amax = 1, Amin = -1;
-    int nLevels;
-    cout << "Number of Level (8, 16, 32): ";
-    cin >> nLevels;
-    if (nLevels > 33)
-    {
-        cout << "\033[1;31mERROR: Ther number Level must be less than 33\033[0m" << endl;
-        return 0;
-    }
-    if (nLevels % 2 != 0 && nLevels != 1)
-    {
-        cout << "\033[1;31mERROR: Ther number level must be the power of 2 (8, 16, 32)\033[0m" << endl;
-        return 0;
-    }
-    if (nLevels < 1)
-    {
-        cout << "\033[1;31mERROR: Ther number of bit Level must positive integer\033[0m" << endl;
-        return 0;
-    }
+    int nLevels = 16; // you can change to 8
     double delta = (Amax - Amin) / pow(nLevels, 2);
 
     int option = -1;
@@ -80,7 +63,7 @@ int main(int argc, char *argv[])
     }
 
     af.setBitDepth(nLevels);
-    af.save("wav_quant_out.wav");
+    af.save("wav_quant_out_v1.wav");
 
     return 0;
 }

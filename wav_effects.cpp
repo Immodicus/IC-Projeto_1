@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    char *inputfile = argv[argc-2];
+    char *inputfile = argv[argc - 2];
 
     // Default settings
     Effect ef = SingleEcho;
@@ -32,53 +32,53 @@ int main(int argc, char *argv[])
     double fc = 500.0;
 
     for (int n = 1; n < argc; n++)
-	{
-		if(string(argv[n]) == "-ef")
-		{
-			if (string(argv[n + 1]) == "singleEcho")
-			{
-				ef = SingleEcho;
-				break;
-			}
+    {
+        if (string(argv[n]) == "-ef")
+        {
+            if (string(argv[n + 1]) == "singleEcho")
+            {
+                ef = SingleEcho;
+                break;
+            }
             if (string(argv[n + 1]) == "multEcho")
-			{
-				ef = MultipleEchos;
-				break;
-			}
+            {
+                ef = MultipleEchos;
+                break;
+            }
             if (string(argv[n + 1]) == "am")
-			{
-				ef = AmplitudeModulation;
-				break;
-			}
-		}
-	}
+            {
+                ef = AmplitudeModulation;
+                break;
+            }
+        }
+    }
 
     for (int n = 1; n < argc; n++)
-	{
-		if(string(argv[n]) == "-g")
-		{
-			gain = atof(argv[n+1]);
+    {
+        if (string(argv[n]) == "-g")
+        {
+            gain = atof(argv[n + 1]);
             break;
-		}
-	}
+        }
+    }
 
     for (int n = 1; n < argc; n++)
-	{
-		if(string(argv[n]) == "-d")
-		{
-			delay = atof(argv[n+1]);
+    {
+        if (string(argv[n]) == "-d")
+        {
+            delay = atof(argv[n + 1]);
             break;
-		}
-	}
+        }
+    }
 
     for (int n = 1; n < argc; n++)
-	{
-		if(string(argv[n]) == "-fc")
-		{
-			fc = atof(argv[n+1]);
+    {
+        if (string(argv[n]) == "-fc")
+        {
+            fc = atof(argv[n + 1]);
             break;
-		}
-	}
+        }
+    }
 
     // AudioFile
     AudioFile<double> af;
@@ -102,33 +102,38 @@ int main(int argc, char *argv[])
     samples.resize(numChannels);
 
     int k = static_cast<int>(static_cast<double>(sampleRate) * delay);
-    
+
     for (int i = 0; i < numChannels; i++)
     {
         for (int j = 0; j < numSamples; j++)
         {
-            if(ef == SingleEcho)
+            if (ef == SingleEcho)
             {
-                if(j >= k) samples[i].push_back(af.samples[i][j] + (gain * af.samples[i][j - k]));
-                else samples[i].push_back(af.samples[i][j]);
+                if (j >= k)
+                    samples[i].push_back(af.samples[i][j] + (gain * af.samples[i][j - k]));
+                else
+                    samples[i].push_back(af.samples[i][j]);
             }
-            else if(ef == MultipleEchos)
+            else if (ef == MultipleEchos)
             {
-                if(j >= k) samples[i].push_back(af.samples[i][j] + gain * samples[i][j - k]);
-                else samples[i].push_back(af.samples[i][j]);
+                if (j >= k)
+                    samples[i].push_back(af.samples[i][j] + gain * samples[i][j - k]);
+                else
+                    samples[i].push_back(af.samples[i][j]);
             }
-            else
+            else if (ef == AmplitudeModulation)
             {
                 // fc is the carrier frequency
+                // samples[i].push_back(2 * sin(2 * M_PI * fc * delay) * af.samples[i][j]);
             }
         }
     }
-    
+
     out.setBitDepth(16);
     out.setSampleRate(af.getSampleRate());
     out.setNumChannels(af.getNumChannels());
     out.setNumSamplesPerChannel(af.getNumSamplesPerChannel());
     out.setAudioBuffer(samples);
     out.setAudioBufferSize(2, af.getNumSamplesPerChannel());
-    out.save(argv[argc-1]);
+    out.save(argv[argc - 1]);
 }

@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     // Command line arguments processing
     if (argc != 3)
     {
-        cout << "\033[1;31mError: Usage sintax is ./wav_cmp <orignal filename> <compressed filename>\033[0m" << endl;
+        cout << "\033[1;31mError: Usage sintax is ./wav_cmp <orignal filename> <quantized filename>\033[0m" << endl;
         return 0;
     }
     char *originalfile = argv[1];
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
             // Update maxError if necessary
             if (tmpError > maxError)
                 maxError = tmpError;
-                }
+        }
     }
 
     D = (1 / N) * D;

@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
             else if (ef == AmplitudeModulation)
             {
                 // fc is the carrier frequency
-                // samples[i].push_back(2 * sin(2 * M_PI * fc * delay) * af.samples[i][j]);
+                samples[i].push_back(cos(2 * M_PI * fc * (j / sampleRate)) * af.samples[i][j]);
             }
         }
     }

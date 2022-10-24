@@ -18,16 +18,30 @@ void SetBit(int8_t& b, int8_t pos, bool value)
 
 int main(int argc, char** argv)
 {
-	if (argc < 4)
+	if (argc < 3)
 	{
-		std::cerr << "usage: " << argv[0] << " encode/decode <file1> <file2>" << std::endl;
+		std::cerr << "usage: " << argv[0] << " [-mode [encode|decode] def(encode)] <inFile> <outFile>" << std::endl;
 		return EXIT_FAILURE;
 	}
 
-	if(strcmp(argv[1], "decode") == 0)
+	bool encode =  true;
+
+	for (int n = 1; n < argc; n++)
 	{
-		BitStream in(argv[2], "r+b");
-		BitStream out(argv[3], "w+b");
+		if (std::string(argv[n]) == "-mode")
+		{
+			if (std::string(argv[n + 1]) == "decode")
+			{
+				encode = false;
+			}
+			break;
+		}
+	}
+
+	if(!encode)
+	{
+		BitStream in(argv[argc - 2], "r+b");
+		BitStream out(argv[argc - 1], "w+b");
 
 		bool b;
 		while (in.ReadBit(b))
@@ -46,10 +60,8 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-		BitStream in(argv[2], "r+b");
-		std::cout << argv[2] << std::endl;
-		BitStream out(argv[3], "w+b");
-		std::cout << argv[3] << std::endl;
+		BitStream in(argv[argc - 2], "r+b");
+		BitStream out(argv[argc - 1], "w+b");
 
 		bool b;
 		bool s;

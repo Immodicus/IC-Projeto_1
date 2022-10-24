@@ -44,9 +44,7 @@ inline double vec_norm(const std::vector<T> &v)
 	return sqrt(result);
 }
 
-constexpr const uint32_t nBits = 16;
-
-inline constexpr void Split(double* x0, double* x1, double x)
+inline constexpr void Split(double* x0, double* x1, double x, uint32_t nBits)
 {
     double d = x * (pow(2, nBits) + 1);
     double t = d - x;
@@ -63,15 +61,18 @@ int main(int argc, char *argv[])
 	size_t nBlocks = 0;
 	double dDctFrac = 0.9999;
 
+	uint32_t nBits = 16;
+
 	bool verbose = false;
 	bool encode = true;
 
 	if (argc < 3)
 	{
 		cerr << "Usage: wav_dct [ -v (verbose) ]\n";
-		cerr << "               [ -dec (decode) ]\n";
+		cerr << "               [ -mode [enc/dec] (def enc) ]\n";
 		cerr << "               [ -bs blockSize (def 1024) ]\n";
 		cerr << "               [ -frac dctFraction (def 0.9999) ]\n";
+		cerr << "               [ -b nBits (def 16) ]\n";
 		cerr << "               fileIn fileOut\n";
 		return 1;
 	}
@@ -87,9 +88,12 @@ int main(int argc, char *argv[])
 
 	for (int n = 1; n < argc; n++)
 	{
-		if (string(argv[n]) == "-dec")
+		if (string(argv[n]) == "-mode")
 		{
-			encode = false;
+			if (string(argv[n + 1]) == "dec")
+			{
+				encode = false;
+			}
 			break;
 		}
 	}
@@ -108,6 +112,15 @@ int main(int argc, char *argv[])
 		if (string(argv[n]) == "-frac")
 		{
 			dDctFrac = atof(argv[n + 1]);
+			break;
+		}
+	}
+
+	for (int n = 1; n < argc; n++)
+	{
+		if (string(argv[n]) == "-b")
+		{
+			nBits = atoi(argv[n + 1]);
 			break;
 		}
 	}
@@ -151,6 +164,7 @@ int main(int argc, char *argv[])
 			std::cout << "nFrames: " << nFrames << "\n";
 			std::cout << "blockSize: " << blockSize << "\n";
 			std::cout << "dDctFrac: " << dDctFrac << "\n";
+			std::cout << "nBits: " << nBits << "\n";
 			std::cout << "nBlocks: " << nBlocks << "\n";
 		}
 
@@ -158,7 +172,7 @@ int main(int argc, char *argv[])
 		assert(outBs.Write(nChannels));
 		assert(outBs.Write(nFrames));
 		assert(outBs.Write(blockSize));
-		assert(outBs.Write(dDctFrac));
+		assert(outBs.Write(nBits));
 
 		vector<double> x(blockSize);
 
@@ -196,7 +210,7 @@ int main(int argc, char *argv[])
 					}
 				}
 
-				std::cout << "Block: " << n << " Channel: " << c << " xNorm: " << xNorm << " Need: " << needed << " coefficients Percent: " << (double)needed / x.size() * 100 << "\n";
+				//std::cout << "Block: " << n << " Channel: " << c << " xNorm: " << xNorm << " Need: " << needed << " coefficients Percent: " << (double)needed / x.size() * 100 << "\n";
 
 				BitSet bitmap(blockSize);
 
@@ -216,7 +230,7 @@ int main(int argc, char *argv[])
 						double d1;
 						double d2;
 
-						Split(&d1, &d2, d);
+						Split(&d1, &d2, d, nBits);
 
 						int64_t i = 0;
 						memcpy(&i, &d1, sizeof(double));
@@ -242,7 +256,7 @@ int main(int argc, char *argv[])
 		assert(inBs.Read(nChannels));
 		assert(inBs.Read(nFrames));
 		assert(inBs.Read(blockSize));
-		assert(inBs.Read(dDctFrac));
+		assert(inBs.Read(nBits));
 
 		nBlocks = static_cast<size_t>(ceil(static_cast<double>(nFrames) / blockSize));
 
@@ -252,7 +266,7 @@ int main(int argc, char *argv[])
 			std::cout << "nChannels: " << nChannels << "\n";
 			std::cout << "nFrames: " << nFrames << "\n";
 			std::cout << "blockSize: " << blockSize << "\n";
-			std::cout << "dDctFrac: " << dDctFrac << "\n";
+			std::cout << "nBits: " << nBits << "\n";
 			std::cout << "nBlocks: " << nBlocks << "\n";
 		}
 

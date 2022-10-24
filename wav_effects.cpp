@@ -134,6 +134,6 @@ int main(int argc, char *argv[])
     out.setNumChannels(af.getNumChannels());
     out.setNumSamplesPerChannel(af.getNumSamplesPerChannel());
     out.setAudioBuffer(samples);
-    out.setAudioBufferSize(2, af.getNumSamplesPerChannel());
+    out.setAudioBufferSize(af.getNumChannels(), af.getNumSamplesPerChannel());
     out.save(argv[argc - 1]);
 }

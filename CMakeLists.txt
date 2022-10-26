@@ -5,7 +5,7 @@ SET (CMAKE_BUILD_TYPE "Release")
 #SET (CMAKE_BUILD_TYPE "Debug")
 
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++17")
-SET (CMAKE_CXX_FLAGS_RELEASE "-O3")
+SET (CMAKE_CXX_FLAGS_RELEASE "-O2")
 SET (CMAKE_CXX_FLAGS_DEBUG "-g3 -fsanitize=address")
 
 SET (BASE_DIR ${CMAKE_SOURCE_DIR} )
@@ -37,3 +37,5 @@ add_executable(wav_cmp2 wav_cmp1.cpp)
 target_link_libraries (wav_cmp2 sndfile fftw3)
 
 add_executable(wav_effects wav_effects.cpp)
+
+add_executable(bitstream_test BitStreamTest.cpp)

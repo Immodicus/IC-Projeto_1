@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 		nBlocks = static_cast<size_t>(ceil(static_cast<double>(nFrames) / blockSize));
 		sampleRate = static_cast<size_t>(sfhIn.samplerate());
 
-		BitStream outBs{argv[argc - 1], "w"};
+		BitStream outBs{argv[argc - 1], "w+"};
 
 		vector<short> samples(nChannels * nFrames);
 		sfhIn.readf(samples.data(), nFrames);

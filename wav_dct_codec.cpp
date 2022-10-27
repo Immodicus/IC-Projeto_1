@@ -176,6 +176,8 @@ int main(int argc, char *argv[])
 
 		vector<double> x(blockSize);
 
+		size_t writtenCoef = 0;
+
 		fftw_plan plan_d = fftw_plan_r2r_1d(blockSize, x.data(), x.data(), FFTW_REDFT10, FFTW_ESTIMATE);
 		for (size_t n = 0; n < nBlocks; n++)
 		{
@@ -202,7 +204,7 @@ int main(int argc, char *argv[])
 				else
 				{
 					double prev = 0.0;
-					while (prev / xNorm < dDctFrac && needed <= blockSize)
+					while (prev / xNorm < dDctFrac && needed < blockSize)
 					{
 						prev = sqrt(pow(prev, 2) + pow(x[sorted[needed]], 2));
 
@@ -240,10 +242,14 @@ int main(int argc, char *argv[])
 						{
 							outBs.WriteBit((i >> (63 - (b % 64))) & 1);
 						}
+
+						writtenCoef++;
 					}
 				}
 			}
 		}
+		
+		std::cout << "---------------------------------\n" << "Percentage of coefficients kept: " << 100 * ((double)writtenCoef / (nBlocks * blockSize * nChannels)) << "\n";
 
 		fftw_destroy_plan(plan_d);
 		fftw_cleanup();

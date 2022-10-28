@@ -74,7 +74,6 @@ int main(int argc, char** argv)
 
 			if (i % 8 == 7 && i > 0)
 			{
-				std::cout << i << "\n";
 				if (c == '0')
 				{
 					out.WriteBit(false);

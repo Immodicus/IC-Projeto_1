@@ -19,6 +19,7 @@
 - make
 
 ## Testing:
+The following examples show all possible arguments being used although some of these are optional. You can run any program without arguments to see which arguments are optional and their default values.
 
 ### Ex2.
 `./wav_hist` -w histFileName wavFile channel 

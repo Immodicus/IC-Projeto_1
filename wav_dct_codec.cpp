@@ -22,13 +22,17 @@ inline std::vector<size_t> vec_sort_index(const std::vector<T> &v)
 	// fill vInd with index values for v (0 to s.size() - 1);
 	std::iota(vInd.begin(), vInd.end(), 0);
 
+	// descending sort indexes by absolute values of v
 	std::sort(
 		vInd.begin(), vInd.end(), [&v](size_t i1, size_t i2)
-		{ return abs(v[i1]) > abs(v[i2]); });
+		{ return abs(v[i1]) > abs(v[i2]); }
+	);
 
 	return vInd;
 }
 
+// https://stackoverflow.com/a/14285800 
+// https://carolomeetsbarolo.wordpress.com/2012/02/13/the-veltkamp-dekker-route-to-extended-precision/ 
 template <typename T>
 inline double vec_norm(const std::vector<T> &v)
 {

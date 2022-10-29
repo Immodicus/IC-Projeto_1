@@ -8,13 +8,13 @@ using namespace std;
 int main(int argc, char *argv[]) {
 
 	if(argc < 3) {
-		cerr << "Usage: " << argv[0] << " [ -mode round|midriser|midtread|shift (def round) ]\n";
+		cerr << "Usage: " << argv[0] << " [ -mode midriser|midtread|shift (def midriser) ]\n";
 		cerr << "                         [-b outBits (def 8)] <input file> <output file>\n";
 		return 1;
 	}
 
 	SndfileHandle sndFile { argv[argc - 2] };
-	QuantizationMode mode = Round;
+	QuantizationMode mode = MidRiser;
 	uint8_t nBits = 8;
 
 	if(sndFile.error()) {
@@ -36,11 +36,6 @@ int main(int argc, char *argv[]) {
 	{
 		if(string(argv[n]) == "-mode")
 		{
-			if (string(argv[n + 1]) == "round")
-			{
-				mode = Round;
-				break;
-			}
 			if (string(argv[n + 1]) == "midriser")
 			{
 				mode = MidRiser;

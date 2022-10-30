@@ -15,7 +15,7 @@
 - git clone git@github.com:Immodicus/IC-Projeto_1.git
 - cd IC-Projeto_1
 - mkdir build && cd build
-- cmake..
+- cmake ..
 - make
 
 ## Testing:

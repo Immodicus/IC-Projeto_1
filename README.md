@@ -22,7 +22,7 @@
 The following examples show all possible arguments being used although some of these are optional. You can run any program without arguments to see which arguments are optional and their default values.
 
 ### Ex2.
-`./wav_hist` -w histFileName wavFile channel 
+`./wav_hist` -w histFileName wavFile [0(left) | 1(right) | 2(mid) | 3(side)]
 
 #### Example:
 - `./wav_hist` -w leftChannel.hist sample.wav 0 // write left channel histogram to file leftChannel.hist which can be viewed with Histogram.m

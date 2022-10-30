@@ -11,7 +11,7 @@
 
 using namespace std;
 
-// https://stackoverflow.com/a/12399290
+// Based on: https://stackoverflow.com/a/12399290
 template <typename T>
 inline std::vector<size_t> vec_sort_index(const std::vector<T> &v)
 {
@@ -31,8 +31,6 @@ inline std::vector<size_t> vec_sort_index(const std::vector<T> &v)
 	return vInd;
 }
 
-// https://stackoverflow.com/a/14285800 
-// https://carolomeetsbarolo.wordpress.com/2012/02/13/the-veltkamp-dekker-route-to-extended-precision/ 
 template <typename T>
 inline double vec_norm(const std::vector<T> &v)
 {
@@ -47,7 +45,8 @@ inline double vec_norm(const std::vector<T> &v)
 
 	return sqrt(result);
 }
-
+// Based on: https://stackoverflow.com/a/14285800 
+// https://carolomeetsbarolo.wordpress.com/2012/02/13/the-veltkamp-dekker-route-to-extended-precision/ 
 inline constexpr void Split(double* x0, double* x1, double x, uint32_t nBits)
 {
     double d = x * (pow(2, nBits) + 1);
@@ -227,7 +226,6 @@ int main(int argc, char *argv[])
 
 				assert(outBs.WriteNBits(bitmap));
 
-				// Keep only "dctFrac" of the "low frequency" coefficients
 				for (size_t k = 0; k < blockSize; k++)
 				{
 					if (bitmap.GetBit(k))
